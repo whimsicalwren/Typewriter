@@ -9,7 +9,8 @@ tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
-version = mod_version
+String gitHash = getCommitHash().substring(0, 10)
+version = mod_version + (add_revision_string.toBoolean() ? "+${gitHash}" : "")
 group = mod_group_id
 
 sourceSets.main.resources {
@@ -123,5 +124,16 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+String getCommitHash() {
+    try {
+        ExecOutput output = providers.exec {
+            commandLine("git", "rev-parse", "HEAD")
+        }
+        return output.standardOutput.asText.get().trim()
+    } catch (Throwable ignored) {
+        return "unknown"
     }
 }
